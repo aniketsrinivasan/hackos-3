@@ -88,6 +88,7 @@ class Benchmark:
         """
         _prediction_metrics = self.model.get_prediction_metrics()
         losses = {_metric: 0 for _metric in _prediction_metrics}
+        skipped_examples = 0
 
         # Keep track of the predictions:
         predictions = []
@@ -97,6 +98,11 @@ class Benchmark:
             label_dict = label.to_dict()
             # print(f"Running prediction on {label.input}")
             prediction = self.model.predict(label.input)
+
+            if prediction is None:
+                skipped_examples += 1
+                continue
+
             predictions.append(prediction)
 
             # Calculate losses:
@@ -108,5 +114,8 @@ class Benchmark:
                 # Add loss:
                 losses[_metric] += _loss
 
+            # print current losses:
+            print(f"Current losses: {losses}")
+
         data_length = len(predictions)
-        return losses, predictions, data_length
+        return losses, predictions, data_length, skipped_examples
